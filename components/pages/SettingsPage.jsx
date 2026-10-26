@@ -1,6 +1,15 @@
 'use client';
 import React, { useState } from 'react';
-import { Settings, Wallet, RotateCcw, ShieldAlert, CheckCircle2, Sliders, Bell } from 'lucide-react';
+import {
+  Settings,
+  Wallet,
+  RotateCcw,
+  ShieldAlert,
+  CheckCircle2,
+  Sliders,
+  AlertTriangle,
+  X,
+} from 'lucide-react';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { useStockStore } from '@/store/stockStore';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
@@ -9,25 +18,20 @@ import { PageHeader } from '../layout/PageHeader';
 
 /**
  * SettingsPage — Controlled Preferences & Reset Form
- * Demonstrates:
- * - Controlled components & Form handling
- * - Custom hooks (usePortfolio, useLocalStorage)
- * - Browser Storage management
- * - State management & validation feedback
  */
 export function SettingsPage() {
   const { balance, setBalance, resetPortfolio } = usePortfolio();
-  const { theme, toggleTheme } = useStockStore();
+  const { theme } = useStockStore();
   const isDark = theme === 'dark';
 
   // Preferences stored in localStorage
   const [defaultExchange, setDefaultExchange] = useLocalStorage('vitaldrop_pref_exchange', 'NSE');
-  const [orderConfirmation, setOrderConfirmation] = useLocalStorage('vitaldrop_pref_confirm', true);
   const [chartInterval, setChartInterval] = useLocalStorage('vitaldrop_pref_chart_interval', '1M');
 
   // Local form state
   const [customBalanceInput, setCustomBalanceInput] = useState(balance.toString());
   const [successMsg, setSuccessMsg] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const handleSavePreferences = (e) => {
     e.preventDefault();
@@ -39,12 +43,37 @@ export function SettingsPage() {
     setTimeout(() => setSuccessMsg(null), 3500);
   };
 
-  const handleResetAllData = () => {
-    if (window.confirm('Are you sure you want to reset all simulator cash, holdings, and transaction history to default?')) {
+  // Reset form settings back to platform defaults
+  const handleResetFormDefaults = () => {
+    setCustomBalanceInput('1000000');
+    setDefaultExchange('NSE');
+    setChartInterval('1M');
+    setBalance(1000000);
+    setSuccessMsg('Settings preferences restored to default (₹10,00,000, NSE, 1M)!');
+    setTimeout(() => setSuccessMsg(null), 3500);
+  };
+
+  // Hard reset simulator data (cash, holdings, transactions, and cache)
+  const handleExecuteResetAll = () => {
+    try {
       resetPortfolio(1000000);
       setCustomBalanceInput('1000000');
-      setSuccessMsg('Simulator portfolio reset to default ₹10,00,000!');
-      setTimeout(() => setSuccessMsg(null), 3500);
+      setDefaultExchange('NSE');
+      setChartInterval('1M');
+
+      // Clear legacy localStorage cache keys if present
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('vitaldrop_cash_balance');
+        localStorage.removeItem('vitaldrop_portfolio_holdings');
+        localStorage.removeItem('vitaldrop_transactions');
+      }
+
+      setShowConfirmModal(false);
+      setSuccessMsg('All simulator data, holdings, and transactions have been reset to default ₹10,00,000!');
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (err) {
+      console.error('Error resetting portfolio:', err);
+      setShowConfirmModal(false);
     }
   };
 
@@ -61,7 +90,10 @@ export function SettingsPage() {
 
       {/* Success Banner */}
       {successMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs flex items-center gap-3 animate-in fade-in">
+        <div
+          id="settings-success-banner"
+          className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs flex items-center gap-3 animate-in fade-in"
+        >
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span className="font-semibold">{successMsg}</span>
         </div>
@@ -174,17 +206,29 @@ export function SettingsPage() {
           </div>
         </div>
 
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <Button type="submit" variant="primary" size="lg">
+        {/* Action Buttons: Reset Settings & Save */}
+        <div className="flex items-center justify-between gap-3 pt-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            id="reset-settings-defaults-btn"
+            onClick={handleResetFormDefaults}
+            className="gap-2"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset Settings to Default</span>
+          </Button>
+
+          <Button type="submit" variant="primary" size="md">
             Save Platform Settings
           </Button>
         </div>
       </form>
 
-      {/* Danger Zone: Simulator Reset */}
+      {/* Danger Zone: Hard Simulator Reset */}
       <div
-        className={`p-6 rounded-3xl border border-rose-500/20 bg-rose-500/5 space-y-3 ${
+        className={`p-6 rounded-3xl border border-rose-500/20 bg-rose-500/5 space-y-4 ${
           isDark ? 'text-white' : 'text-gray-900'
         }`}
       >
@@ -192,19 +236,73 @@ export function SettingsPage() {
           <ShieldAlert className="w-4 h-4" />
           <span>Danger Zone: Hard Reset Simulator Data</span>
         </div>
-        <p className="text-xs text-gray-400">
-          This will wipe all active equity holdings, erase your transaction history, and restore your virtual cash balance to default. This action cannot be undone.
+        <p className="text-xs text-gray-400 leading-relaxed">
+          This will wipe all active equity holdings, erase your transaction history, and restore your virtual cash balance to the default ₹10,00,000.
         </p>
         <Button
+          type="button"
           variant="danger"
           size="sm"
-          onClick={handleResetAllData}
+          id="reset-all-simulator-data-btn"
+          onClick={() => setShowConfirmModal(true)}
           className="gap-2"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Reset All Simulator Data</span>
         </Button>
       </div>
+
+      {/* ── In-App Confirmation Modal ── */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-[#0e0e1e] border border-white/15 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2.5 text-rose-400">
+                <AlertTriangle className="w-5 h-5 shrink-0" />
+                <h3 className="font-bold text-base text-white">Confirm Hard Simulator Reset</h3>
+              </div>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="text-gray-400 hover:text-white p-1 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-gray-300">
+              <p>
+                Are you sure you want to perform a hard reset? This action will immediately:
+              </p>
+              <ul className="list-disc pl-5 space-y-1 text-gray-400 font-mono">
+                <li>Reset virtual cash balance to ₹10,00,000</li>
+                <li>Wipe all open stock positions &amp; holdings</li>
+                <li>Erase transaction history log</li>
+                <li>Restore execution preferences to default</li>
+              </ul>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowConfirmModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                id="confirm-hard-reset-btn"
+                onClick={handleExecuteResetAll}
+                className="bg-rose-600 hover:bg-rose-500 text-white gap-1.5"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Yes, Reset Everything</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
