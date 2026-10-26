@@ -26,9 +26,9 @@ export function RiskSandboxPage() {
     <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-6">
       {/* ── Page Header ── */}
       <PageHeader
-        title="What-If Risk Sandbox"
-        description="Interactive investment-planning simulator with synchronized controls, live compound growth formulas, and multi-scenario risk dispersion modeling."
-        badge="What-If Simulator"
+        title="What-If Risk Sandbox & Stock Prediction Engine"
+        description="Vital Drop — Crash. Recover. Repeat. Explore 5-year historical market data, analyze peak-to-trough drawdowns, run statistical forecasts with 95% prediction intervals, and simulate investment scenarios."
+        badge="Crash • Recover • Repeat"
         badgeVariant="violet"
         badgeIcon={Sparkles}
         actions={

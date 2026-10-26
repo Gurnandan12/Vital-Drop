@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { User as UserIcon, LogOut, ChevronDown, Shield, Mail, X, Wallet, CheckCircle2, Edit3, Save, AlertCircle, Loader2 } from 'lucide-react';
 export function UserProfileMenu({ isDark = true }) {
@@ -15,7 +15,7 @@ export function UserProfileMenu({ isDark = true }) {
     const [isSaving, setIsSaving] = useState(false);
     const [errorMsg, setErrorMsg] = useState(null);
     const [successMsg, setSuccessMsg] = useState(null);
-    const router = useRouter();
+    const navigate = useNavigate();
     const menuRef = useRef(null);
     // Sync user from session if not present in store
     useEffect(() => {
@@ -51,12 +51,12 @@ export function UserProfileMenu({ isDark = true }) {
             logout();
             setDropdownOpen(false);
             setProfileModalOpen(false);
-            router.push('/login');
+            navigate('/login');
         }
         catch (error) {
             console.error('Logout failed:', error);
             logout();
-            router.push('/login');
+            navigate('/login');
         }
         finally {
             setLoggingOut(false);
@@ -64,7 +64,7 @@ export function UserProfileMenu({ isDark = true }) {
     };
     const handleOpenProfile = () => {
         setDropdownOpen(false);
-        router.push('/profile');
+        navigate('/profile');
     };
     const handleStartEditing = () => {
         setEditName(user?.name || '');

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 
 export function Footer() {
     return (<footer className="bg-[#040409] border-t border-white/5 pt-16 pb-8">
@@ -26,7 +26,7 @@ export function Footer() {
           <div className="flex gap-8 text-sm font-medium text-gray-400">
             <a href="#" className="hover:text-white transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-white transition-colors">How it Works</a>
-            <Link href="/dashboard" className="hover:text-violet-400 transition-colors">Demo</Link>
+            <Link to="/dashboard" className="hover:text-violet-400 transition-colors">Demo</Link>
           </div>
         </div>
         

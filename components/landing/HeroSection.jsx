@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { ArrowRight, Activity, TrendingUp } from 'lucide-react';
 export function HeroSection() {
     return (<section className="relative overflow-hidden bg-[#080814] pt-32 pb-24 lg:pt-40 lg:pb-32">
@@ -25,7 +25,7 @@ export function HeroSection() {
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-[fade-in-up_1.4s_ease-out]">
-          <Link href="/dashboard" className="group relative inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-950 font-semibold rounded-2xl overflow-hidden transition-transform hover:scale-105 active:scale-95">
+          <Link to="/dashboard" id="start-simulation-btn" className="group relative inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-950 font-semibold rounded-2xl overflow-hidden transition-transform hover:scale-105 active:scale-95 cursor-pointer">
             <div className="absolute inset-0 bg-gradient-to-r from-violet-200 to-indigo-200 opacity-0 group-hover:opacity-100 transition-opacity"/>
             <span className="relative">Start Simulation</span>
             <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform"/>
